@@ -100,7 +100,7 @@ export default function Content({mailboxName}) {
             </TableBody>
           </Table>
         </TableContainer>
-        <Box sx={{flex: 1, position: 'sticky', top: '80px',
+        <Box sx={{flex: 1, position: 'sticky', top: '90px',
           maxHeight: 'calc(100vh - 96px)', overflow: 'auto'}}>
           <Email
             email={selectedEmail}

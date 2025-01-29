@@ -32,7 +32,7 @@ export default function BasicList({onMailboxSelect, currentMailbox}) {
 
   return (
     <Box sx={{width: '100%', maxWidth: 360, bgcolor: 'background.paper',
-      position: 'sticky', top: '64px', maxHeight: 'calc(100vh - 64px)',
+      position: 'sticky', top: '90px', maxHeight: 'calc(100vh - 64px)',
       overflow: 'auto'}}>
       <nav aria-label="main mailbox folders">
         <List>
