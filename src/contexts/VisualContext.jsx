@@ -3,16 +3,21 @@ import PropTypes from 'prop-types';
 
 const VisualContext = createContext();
 
+VisualProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 /**
  * Provider component for managing mobile and desktop view states
  * @param {object} props - Component properties
- * @param {object} props.children - wrap with the provider
+ * @param {object} props.children - Child components to wrap with the provider
  * @returns {object} Provider component that manages visual state
  */
 export function VisualProvider({children}) {
   const [isMobile, setIsMobile] = useState(false);
   const [isEmailVisible, setIsEmailVisible] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
 
   // Handle screen resize and set mobile state
   useEffect(() => {
@@ -34,6 +39,7 @@ export function VisualProvider({children}) {
     setSelectedEmail(email);
     if (isMobile) {
       setIsEmailVisible(true);
+      setIsMenuVisible(false); // Hide menu when email is selected
     }
   };
 
@@ -44,21 +50,30 @@ export function VisualProvider({children}) {
     setSelectedEmail(null);
   };
 
+  const toggleMenu = () => {
+    setIsMenuVisible(!isMenuVisible);
+    if (isMobile && isEmailVisible) {
+      setIsEmailVisible(false);
+    }
+  };
+
   return (
     <VisualContext.Provider value={{
       isMobile,
       isEmailVisible,
       selectedEmail,
+      isMenuVisible,
       handleEmailSelection,
       closeEmail,
+      toggleMenu,
     }}>
       {children}
     </VisualContext.Provider>
   );
 }
 
+/**
+ * Hook to access the visual context
+ * @returns {object} The visual context value
+ */
 export const useVisual = () => useContext(VisualContext);
-
-VisualProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};

@@ -1,4 +1,4 @@
-import {useMemo, useEffect} from 'react';
+import {useMemo, useEffect, useRef} from 'react';
 import PropTypes from 'prop-types';
 import mail from '../data/mail.json';
 import Email from './Email';
@@ -22,21 +22,29 @@ function formatDate(dateStr) {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
 
-  const dateOnly = new Date(date.getFullYear(),
-      date.getMonth(), date.getDate());
-  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterdayOnly = new Date(yesterday.getFullYear(),
-      yesterday.getMonth(), yesterday.getDate());
+  const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+  );
+  const todayOnly = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+  );
+  const yesterdayOnly = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate(),
+  );
 
   const twelveMonthsAgo = new Date(now);
   twelveMonthsAgo.setMonth(now.getMonth() - 12);
 
   if (dateOnly.getTime() === todayOnly.getTime()) {
-    return date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
     return 'Yesterday';
   } else if (date > twelveMonthsAgo) {
@@ -60,22 +68,40 @@ export default function Content({mailboxName}) {
     handleEmailSelection,
     closeEmail,
   } = useVisual();
-
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  }, [selectedEmail]);
+  const tableContainerRef = useRef(null);
+  const prevMailboxRef = useRef(mailboxName);
 
   const sortedEmails = useMemo(() => {
     const currentMailbox = mail.find((m) => m.name === mailboxName);
     if (!currentMailbox) return [];
 
-    return [...currentMailbox.mail].sort((a, b) =>
-      new Date(b.received) - new Date(a.received),
+    return [...currentMailbox.mail].sort(
+        (a, b) => new Date(b.received) - new Date(a.received),
     );
   }, [mailboxName]);
+
+  // Handle mailbox changes
+  useEffect(() => {
+    if (mailboxName !== prevMailboxRef.current) {
+      // Scroll to top
+      if (tableContainerRef.current) {
+        tableContainerRef.current.scrollTop = 0;
+      }
+
+      // Select first email in desktop mode only on mailbox change
+      if (!isMobile && sortedEmails.length > 0) {
+        handleEmailSelection(sortedEmails[0]);
+      }
+      prevMailboxRef.current = mailboxName;
+    }
+  }, [mailboxName, sortedEmails, isMobile, handleEmailSelection]);
+
+  // Handle initial load
+  useEffect(() => {
+    if (!isMobile && sortedEmails.length > 0 && !selectedEmail) {
+      handleEmailSelection(sortedEmails[0]);
+    }
+  }, []);
 
   if (!mail || mail.length === 0) {
     return <div>No mail data available</div>;
@@ -84,19 +110,36 @@ export default function Content({mailboxName}) {
   // Mobile view with email visible
   if (isMobile && isEmailVisible) {
     return (
-      <Box sx={{p: 2}}>
+      <Box sx={{pt: 0}}>
         <Email email={selectedEmail} onClose={closeEmail} />
       </Box>
     );
   }
 
-  // Default view (desktop or mobile email list)
   return (
-    <Box>
-      <Box sx={{display: 'flex', gap: 2,
-        flexDirection: isMobile ? 'column' : 'row'}}>
-        <TableContainer component={Paper} sx={{flex: isMobile ? 1 : 1.5}}>
-          <Table>
+    <Box sx={{
+      height: isMobile ? '100%' : 'calc(100vh - 64px)',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <Box sx={{
+        display: 'flex',
+        gap: 2,
+        flexDirection: isMobile ? 'column' : 'row',
+        height: '100%',
+        overflow: 'hidden',
+      }}>
+        <TableContainer
+          ref={tableContainerRef}
+          component={Paper}
+          sx={{
+            flex: isMobile ? 1 : 1.5,
+            overflow: 'auto',
+            maxHeight: '100%',
+          }}
+        >
+          <Table stickyHeader>
             <TableBody>
               {sortedEmails.map((email) => (
                 <TableRow
@@ -108,7 +151,9 @@ export default function Content({mailboxName}) {
                 >
                   <TableCell>{email.from.name}</TableCell>
                   <TableCell>{email.subject}</TableCell>
-                  <TableCell>{formatDate(email.received)}</TableCell>
+                  <TableCell sx={{whiteSpace: 'nowrap'}}>
+                    {formatDate(email.received)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -117,10 +162,8 @@ export default function Content({mailboxName}) {
         {!isMobile && (
           <Box sx={{
             flex: 1,
-            position: 'sticky',
-            top: '90px',
-            maxHeight: 'calc(100vh - 96px)',
             overflow: 'auto',
+            maxHeight: '100%',
           }}>
             <Email email={selectedEmail} onClose={closeEmail} />
           </Box>

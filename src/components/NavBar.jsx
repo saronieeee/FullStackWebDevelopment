@@ -8,14 +8,19 @@ import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/Inbox';
 import ImportantIcon from '@mui/icons-material/Mail';
 import TrashIcon from '@mui/icons-material/Delete';
+import Drawer from '@mui/material/Drawer';
+import {useVisual} from '../contexts/VisualContext';
 
 /**
+ * Navigation bar component
  * @param {object} props - Component properties
- * @param {Function} props.onMailboxSelect -handles mailbox selection
+ * @param {Function} props.onMailboxSelect - Callback for mailbox selection
  * @param {string} props.currentMailbox - Currently selected mailbox
- * @returns {object} - the rendered NavBar component
+ * @returns {object} The rendered NavBar component
  */
 export default function BasicList({onMailboxSelect, currentMailbox}) {
+  const {isMobile, isMenuVisible, toggleMenu} = useVisual();
+
   const mailboxes = [
     {name: 'Inbox', icon: <InboxIcon />},
     {name: 'Important', icon: <ImportantIcon />},
@@ -28,29 +33,68 @@ export default function BasicList({onMailboxSelect, currentMailbox}) {
       top: 0,
       behavior: 'smooth',
     });
+    if (isMobile) {
+      toggleMenu();
+    }
   };
 
+  const mailboxList = (
+    <List sx={{pt: 0}}>
+      {mailboxes.map((mailbox) => (
+        <ListItem key={mailbox.name} disablePadding>
+          <ListItemButton
+            selected={currentMailbox === mailbox.name}
+            onClick={() => handleMailboxClick(mailbox.name)}
+            sx={{
+              // Match the height of table cells
+              minHeight: '53px',
+              px: 2,
+            }}
+          >
+            <ListItemIcon>
+              {mailbox.icon}
+            </ListItemIcon>
+            <ListItemText
+              primary={mailbox.name}
+              primaryTypographyProps={{
+                sx: {fontSize: '0.875rem'},
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="left"
+        open={isMenuVisible}
+        onClose={toggleMenu}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 240,
+            marginTop: '64px',
+            height: 'calc(100% - 64px)',
+          },
+        }}
+      >
+        {mailboxList}
+      </Drawer>
+    );
+  }
+
   return (
-    <Box sx={{width: '100%', maxWidth: 360, bgcolor: 'background.paper',
-      position: 'sticky', top: '90px', maxHeight: 'calc(100vh - 64px)',
-      overflow: 'auto'}}>
-      <nav aria-label="main mailbox folders">
-        <List>
-          {mailboxes.map((mailbox) => (
-            <ListItem key={mailbox.name} disablePadding>
-              <ListItemButton
-                selected={currentMailbox === mailbox.name}
-                onClick={() => handleMailboxClick(mailbox.name)}
-              >
-                <ListItemIcon>
-                  {mailbox.icon}
-                </ListItemIcon>
-                <ListItemText primary={mailbox.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </nav>
+    <Box
+      sx={{
+        width: 240,
+        flexShrink: 0,
+        borderRight: 1,
+        borderColor: 'divider',
+      }}
+    >
+      {mailboxList}
     </Box>
   );
 }

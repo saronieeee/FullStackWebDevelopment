@@ -6,25 +6,28 @@ import Content from './components/Content';
 import {VisualProvider} from './contexts/VisualContext';
 
 /**
- *  @returns {object} The rendered full app
+ * Main App component
+ * @returns {object} The rendered App component
  */
 function App() {
   const [currentMailbox, setCurrentMailbox] = useState('Inbox');
 
   return (
     <VisualProvider>
-      <Box display="grid" gridTemplateColumns="repeat(12,1fr)" gap={2}>
-        <Box gridColumn="span 12">
-          <AppBar mailbox={currentMailbox} />
-        </Box>
-        <Box gridColumn="span 2">
+      <Box sx={{display: 'flex', flexDirection: 'column', height: '100vh'}}>
+        <AppBar mailbox={currentMailbox} />
+        <Box sx={{
+          display: 'flex',
+          flexGrow: 1,
+          overflow: 'hidden',
+        }}>
           <NavBar
             onMailboxSelect={setCurrentMailbox}
             currentMailbox={currentMailbox}
           />
-        </Box>
-        <Box gridColumn="span 10">
-          <Content mailboxName={currentMailbox} />
+          <Box sx={{flexGrow: 1}}>
+            <Content mailboxName={currentMailbox} />
+          </Box>
         </Box>
       </Box>
     </VisualProvider>
