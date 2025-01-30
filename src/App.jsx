@@ -5,6 +5,13 @@ import Content from './components/Content';
 import {VisualProvider} from './contexts/VisualContext';
 
 /**
+ * This component was inspired by the lecture code
+ * for creating contexts and using Grid:
+ * 08.ReactExternalStateFunctionsHooks
+ * Although, instead of Grid, I used Box
+ */
+
+/**
  * Main App component
  * @returns {object} The rendered App component
  */

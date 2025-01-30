@@ -7,6 +7,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {useVisual} from '../contexts/VisualContext';
 
 /**
+ * This component was inspired by MUI
+ * https://mui.com/material-ui/react-app-bar/
+ * Primarily the formatting and code for return
+ */
+
+/**
  * Application bar component
  * @returns {object} The rendered AppBar component
  */

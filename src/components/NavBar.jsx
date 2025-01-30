@@ -40,6 +40,16 @@ export default function NavBar() {
     }
   };
 
+  /**
+ * The following nav bar styling was inspired by MUI
+ * https://mui.com/material-ui/react-app-bar/
+ * https://mui.com/material-ui/icons/
+ * 
+ * Primarily for the mailboxList function, I referenced the 
+ * MUI List component to help with styling and listing 
+ * the mailbox buttons
+ */
+
   const mailboxList = (
     <List sx={{pt: 0}}>
       {mailboxes.map((mailbox) => (

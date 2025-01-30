@@ -13,6 +13,8 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import {useVisual} from '../contexts/VisualContext';
 
+
+
 /**
  * Formats the received date for the list view
  * @param {string} dateStr - The ISO date string to format
@@ -125,6 +127,12 @@ export default function Content({mailboxName}) {
         </Box>
       );
     }
+
+    /**
+     * For the email viewer, I referenced MUI's paper component
+     * to make the viewer styling pop out
+     * https://mui.com/material-ui/react-paper/
+     */
 
     return (
       <Paper sx={{
