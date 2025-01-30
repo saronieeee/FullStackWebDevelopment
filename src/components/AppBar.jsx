@@ -4,17 +4,19 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import PropTypes from 'prop-types';
 import {useVisual} from '../contexts/VisualContext';
 
 /**
  * Application bar component
- * @param {object} props - Component properties
- * @param {string} props.mailbox - Name of current mailbox to display
  * @returns {object} The rendered AppBar component
  */
-export default function ButtonAppBar({mailbox}) {
-  const {isMobile, isMenuVisible, toggleMenu} = useVisual();
+export default function ButtonAppBar() {
+  const {
+    isMobile,
+    isMenuVisible,
+    toggleMenu,
+    currentMailbox,
+  } = useVisual();
 
   return (
     <Box sx={{flexGrow: 1}}>
@@ -33,15 +35,11 @@ export default function ButtonAppBar({mailbox}) {
             </IconButton>
           )}
           <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
-            CSE186 Mail - {mailbox}
+            CSE186 Mail - {currentMailbox}
           </Typography>
         </Toolbar>
       </AppBar>
-      <Toolbar /> {/* Spacer for fixed AppBar */}
+      <Toolbar />
     </Box>
   );
 }
-
-ButtonAppBar.propTypes = {
-  mailbox: PropTypes.string.isRequired,
-};

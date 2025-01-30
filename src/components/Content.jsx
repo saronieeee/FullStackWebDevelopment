@@ -1,7 +1,6 @@
 import {useMemo, useEffect, useRef} from 'react';
 import PropTypes from 'prop-types';
 import mail from '../data/mail.json';
-import Email from './Email';
 import Box from '@mui/material/Box';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
@@ -9,14 +8,17 @@ import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 import {useVisual} from '../contexts/VisualContext';
 
 /**
- * Formats the received date according to the requirements
+ * Formats the received date for the list view
  * @param {string} dateStr - The ISO date string to format
  * @returns {string} The formatted date string based on relative time rules
  */
-function formatDate(dateStr) {
+function formatListDate(dateStr) {
   const date = new Date(dateStr);
   const now = new Date();
   const yesterday = new Date(now);
@@ -55,6 +57,22 @@ function formatDate(dateStr) {
 }
 
 /**
+ * Formats the date for the email detail view
+ * @param {string} dateStr - The date string to format
+ * @returns {string} Formatted date string
+ */
+function formatEmailDate(dateStr) {
+  const date = new Date(dateStr);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = date.toLocaleString('default', {month: 'long'});
+  const year = date.getFullYear();
+
+  return `${month} ${day}, ${year} at ${hours}:${minutes}`;
+}
+
+/**
  * Content component displays email list and email viewer
  * @param {object} props - Component properties
  * @param {string} props.mailboxName - Name of the current mailbox to display
@@ -67,53 +85,97 @@ export default function Content({mailboxName}) {
     selectedEmail,
     handleEmailSelection,
     closeEmail,
+    currentMailbox,
   } = useVisual();
   const tableContainerRef = useRef(null);
   const prevMailboxRef = useRef(mailboxName);
 
   const sortedEmails = useMemo(() => {
-    const currentMailbox = mail.find((m) => m.name === mailboxName);
-    if (!currentMailbox) return [];
+    const mailboxData = mail.find((m) => m.name === currentMailbox);
+    if (!mailboxData) return [];
 
-    return [...currentMailbox.mail].sort(
+    return [...mailboxData.mail].sort(
         (a, b) => new Date(b.received) - new Date(a.received),
     );
-  }, [mailboxName]);
+  }, [currentMailbox]);
 
   // Handle mailbox changes
   useEffect(() => {
-    if (mailboxName !== prevMailboxRef.current) {
-      // Scroll to top
+    if (currentMailbox !== prevMailboxRef.current) {
       if (tableContainerRef.current) {
         tableContainerRef.current.scrollTop = 0;
       }
 
-      // Select first email in desktop mode only on mailbox change
       if (!isMobile && sortedEmails.length > 0) {
         handleEmailSelection(sortedEmails[0]);
       }
-      prevMailboxRef.current = mailboxName;
+      prevMailboxRef.current = currentMailbox;
     }
-  }, [mailboxName, sortedEmails, isMobile, handleEmailSelection]);
+  }, [currentMailbox, sortedEmails, isMobile, handleEmailSelection]);
 
-  // Handle initial load
   useEffect(() => {
     if (!isMobile && sortedEmails.length > 0 && !selectedEmail) {
       handleEmailSelection(sortedEmails[0]);
     }
   }, []);
 
+  const renderEmailViewer = () => {
+    if (!selectedEmail) {
+      return (
+        <Box sx={{p: 2, textAlign: 'center', color: 'text.secondary'}}>
+          Select an email to read
+        </Box>
+      );
+    }
+
+    return (
+      <Paper sx={{
+        p: 2,
+        position: 'relative',
+        mt: isMobile ? 0 : 0,
+        height: isMobile ? '100vh' : 'auto',
+      }}>
+        {isMobile && (
+          <IconButton
+            onClick={closeEmail}
+            aria-label="close mail reader"
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
+        <Typography variant="h6" gutterBottom>
+          {selectedEmail.subject}
+        </Typography>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          From: {selectedEmail.from.name} &lt;{selectedEmail.from.address}&gt;
+        </Typography>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          To: {selectedEmail.to.name} &lt;{selectedEmail.to.address}&gt;
+        </Typography>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Received: {formatEmailDate(selectedEmail.received)}
+        </Typography>
+        <Box sx={{mt: 2}}>
+          <Typography variant="body1" style={{whiteSpace: 'pre-line'}}>
+            {selectedEmail.content}
+          </Typography>
+        </Box>
+      </Paper>
+    );
+  };
+
   if (!mail || mail.length === 0) {
     return <div>No mail data available</div>;
   }
 
-  // Mobile view with email visible
   if (isMobile && isEmailVisible) {
-    return (
-      <Box sx={{pt: 0}}>
-        <Email email={selectedEmail} onClose={closeEmail} />
-      </Box>
-    );
+    return <Box sx={{pt: 0}}>{renderEmailViewer()}</Box>;
   }
 
   return (
@@ -152,7 +214,7 @@ export default function Content({mailboxName}) {
                   <TableCell>{email.from.name}</TableCell>
                   <TableCell>{email.subject}</TableCell>
                   <TableCell sx={{whiteSpace: 'nowrap'}}>
-                    {formatDate(email.received)}
+                    {formatListDate(email.received)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -165,7 +227,7 @@ export default function Content({mailboxName}) {
             overflow: 'auto',
             maxHeight: '100%',
           }}>
-            <Email email={selectedEmail} onClose={closeEmail} />
+            {renderEmailViewer()}
           </Box>
         )}
       </Box>

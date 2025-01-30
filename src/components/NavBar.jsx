@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -13,13 +12,16 @@ import {useVisual} from '../contexts/VisualContext';
 
 /**
  * Navigation bar component
- * @param {object} props - Component properties
- * @param {Function} props.onMailboxSelect - Callback for mailbox selection
- * @param {string} props.currentMailbox - Currently selected mailbox
  * @returns {object} The rendered NavBar component
  */
-export default function BasicList({onMailboxSelect, currentMailbox}) {
-  const {isMobile, isMenuVisible, toggleMenu} = useVisual();
+export default function NavBar() {
+  const {
+    isMobile,
+    isMenuVisible,
+    toggleMenu,
+    currentMailbox,
+    setCurrentMailbox,
+  } = useVisual();
 
   const mailboxes = [
     {name: 'Inbox', icon: <InboxIcon />},
@@ -28,7 +30,7 @@ export default function BasicList({onMailboxSelect, currentMailbox}) {
   ];
 
   const handleMailboxClick = (mailboxName) => {
-    onMailboxSelect(mailboxName);
+    setCurrentMailbox(mailboxName);
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
@@ -46,8 +48,7 @@ export default function BasicList({onMailboxSelect, currentMailbox}) {
             selected={currentMailbox === mailbox.name}
             onClick={() => handleMailboxClick(mailbox.name)}
             sx={{
-              // Match the height of table cells
-              minHeight: '53px',
+              minHeight: '57px',
               px: 2,
             }}
           >
@@ -98,8 +99,3 @@ export default function BasicList({onMailboxSelect, currentMailbox}) {
     </Box>
   );
 }
-
-BasicList.propTypes = {
-  onMailboxSelect: PropTypes.func.isRequired,
-  currentMailbox: PropTypes.string.isRequired,
-};
