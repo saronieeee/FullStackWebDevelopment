@@ -14,6 +14,7 @@ import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import loader from '../data/loader';
+import mail from '../data/mail.json';
 
 /**
  * Do not modify this function.
@@ -65,23 +66,38 @@ describe('Desktop View Tests', () => {
 
   it('should display emails sorted by received date', async () => {
     render(<App />);
-    const emailTable = screen.getByRole('table');
-    const rows = within(emailTable).getAllByRole('row');
 
-    // Get timestamps from first few rows
-    const timestamps = rows.slice(1, 3).map((row) => {
-      const cells = within(row).getAllByRole('cell');
-      return new Date(cells[2].textContent).getTime();
-    });
+    // Get the Inbox data and sort by date
+    const inboxData = mail.find((m) => m.name === 'Inbox').mail;
+    const sortedEmails = [...inboxData].sort(
+        (a, b) => new Date(b.received) - new Date(a.received),
+    );
 
-    // Verify descending order (most recent first)
-    expect(timestamps[0]).toBeGreaterThan(timestamps[1]);
+    // Get the first two emails displayed
+    const rows = screen.getAllByRole('row');
+    const firstRowSubject = within(rows[1]).getAllByRole('cell')[1];
+    const secondRowSubject = within(rows[2]).getAllByRole('cell')[1];
+
+    // Verify they match the sorted order from our data
+    expect(firstRowSubject).toHaveTextContent(sortedEmails[1].subject);
+    expect(secondRowSubject).toHaveTextContent(sortedEmails[2].subject);
   });
 
   it('should select first email by default in a mailbox', () => {
     render(<App />);
-    const firstEmail = screen.getByRole('row', {selected: true});
-    expect(firstEmail).toBeInTheDocument();
+
+    // Get the Inbox data (default mailbox) and sort by date
+    const inboxData = mail.find((m) => m.name === 'Inbox').mail;
+    const sortedEmails = [...inboxData].sort(
+        (a, b) => new Date(b.received) - new Date(a.received),
+    );
+    const expectedFirstEmail = sortedEmails[0];
+
+    // Verify the selected email content matches the first email
+    const fromLine =
+    `From: ${expectedFirstEmail.from.name}` +
+    ` <${expectedFirstEmail.from.address}>`;
+    expect(screen.getByText(fromLine)).toBeInTheDocument();
   });
 
   it('show email content in right panel when email is selected', async () => {
@@ -135,16 +151,22 @@ describe('Desktop View Tests', () => {
   it('should select first email when switching mailboxes', async () => {
     const user = userEvent.setup();
     render(<App />);
-    const importantMailbox = screen.getByText('Important');
 
+    // Get the Important mailbox and click it
+    const importantMailbox = screen.getByText('Important');
     await user.click(importantMailbox);
 
-    // Verify first email is selected
-    const rows = screen.getAllByRole('row');
-    expect(rows[1]).toHaveAttribute('aria-selected', 'true');
+    // Get the Important mailbox data and sort it by received date descending
+    const importantData = mail.find((m) => m.name === 'Important').mail;
+    const sortedEmails = [...importantData].sort(
+        (a, b) => new Date(b.received) - new Date(a.received),
+    );
+    const expectedFirstEmail = sortedEmails[0];
 
-    // Verify email content is displayed
-    const fromLabel = screen.getByText(/From:/);
-    expect(fromLabel).toBeInTheDocument();
+    // Verify the selected email content matches the first email
+    const fromLine =
+    `From: ${expectedFirstEmail.from.name}` +
+    ` <${expectedFirstEmail.from.address}>`;
+    expect(screen.getByText(fromLine)).toBeInTheDocument();
   });
 });

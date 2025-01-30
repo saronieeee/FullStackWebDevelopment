@@ -92,8 +92,6 @@ export default function Content({mailboxName}) {
 
   const sortedEmails = useMemo(() => {
     const mailboxData = mail.find((m) => m.name === currentMailbox);
-    if (!mailboxData) return [];
-
     return [...mailboxData.mail].sort(
         (a, b) => new Date(b.received) - new Date(a.received),
     );
@@ -130,10 +128,8 @@ export default function Content({mailboxName}) {
 
     return (
       <Paper sx={{
-        p: 2,
-        position: 'relative',
-        mt: isMobile ? 0 : 0,
-        height: isMobile ? '100vh' : 'auto',
+        p: 2, position: 'relative', mt: 0,
+        height: '100vh',
       }}>
         {isMobile && (
           <IconButton
@@ -169,10 +165,6 @@ export default function Content({mailboxName}) {
       </Paper>
     );
   };
-
-  if (!mail || mail.length === 0) {
-    return <div>No mail data available</div>;
-  }
 
   if (isMobile && isEmailVisible) {
     return <Box sx={{pt: 0}}>{renderEmailViewer()}</Box>;
