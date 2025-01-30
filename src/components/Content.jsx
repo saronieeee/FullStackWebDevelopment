@@ -201,7 +201,7 @@ export default function Content({mailboxName}) {
                   onClick={() => handleEmailSelection(email)}
                   hover
                   sx={{cursor: 'pointer'}}
-                  selected={selectedEmail?.id === email.id}
+                  selected={selectedEmail?.received === email.received}
                 >
                   <TableCell>{email.from.name}</TableCell>
                   <TableCell>{email.subject}</TableCell>
