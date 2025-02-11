@@ -1,0 +1,102 @@
+/* 
+  CSE186 Assignment 1
+
+  CSS for Advanced Requirement 
+*/
+
+.basic-course-container {
+  display: none;
+}
+
+.adv-course-container {
+  visibility: visible; 
+  width: 300px;
+  height: 300px;
+}
+
+.letters-container {
+  width: 332px;
+  margin-top: -11px;
+  margin-left: -10px;
+}
+
+.course-letters{
+  height: 183px;
+  background-color: navy;
+  color: white;
+  font-size: 60px;
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 1px;
+  /*padding-bottom: 50px;*/
+  /*padding-left: 7px;*/
+}
+
+#first {
+  padding-left: 10px;
+}
+
+.letter{
+  padding-right: 70px;
+  height: 185px;
+  vertical-align: top;
+}
+
+.letter:hover{
+  background-color: white;
+  color: navy;
+  padding-right:70px;
+  height:185px;
+}
+
+.course-numbers{
+  /*Position of entire div*/
+  position: fixed; 
+  bottom: 0; 
+  right: 0;
+  margin-bottom: 0px;
+  padding: 0px;
+
+  /*Dimensions of div*/
+  width: 190px;
+  height: 70px;
+  padding-bottom: 1px;
+
+  /*Styling*/
+  background-color: black;
+  border-radius: 1px;
+  color: yellow;
+  border-color: yellow;
+  border: 5px solid;
+  
+  font-size: 40px;
+  line-height: 62px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.course-numbers td {
+  position: absolute;
+  width: 60px;
+  height: 100%;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  top: 0;
+}
+
+#first-num {
+  left: 0;
+}
+
+#second-num {
+  left: 60px;
+}
+
+#third-num {
+  left: 120px;
+  padding-right: 1px;
+}
+
+.course-numbers td:hover {
+  background-color: yellow;
+  color: black;
+}

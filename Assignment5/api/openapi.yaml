@@ -1,0 +1,236 @@
+#######################################################################
+#
+# Copyright (C) 2020-2025 David C. Harrison. All right reserved.
+#
+# You may not use, distribute, publish, or modify this code without
+# the express written permission of the copyright holder.
+#
+#######################################################################
+
+openapi: '3.0.3'
+
+info:
+  description: CSE186 Assignment 5
+  version: 0.1.0
+  title: CSE186 Assignment 5
+
+servers:
+  - url: http://localhost:3010/api/v0
+
+components:
+  schemas:
+    Email:
+      type: object
+      required:
+        - id
+        - to-name
+        - to-email
+        - from-name
+        - from-email
+        - subject
+        - received
+        - content
+      properties:
+        id:
+          type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        to-name:
+          type: string
+        to-email:
+          type: string
+          format: email
+        from-name:
+          type: string
+        from-email:
+          type: string
+          format: email
+        subject:
+          type: string
+        received:
+          type: string
+          format: date-time
+        content:
+          type: string
+    
+    EmailNoContent:
+      type: object
+      required:
+        - id
+        - to-name
+        - to-email
+        - from-name
+        - from-email
+        - subject
+        - received
+      properties:
+        id:
+          type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        to-name:
+          type: string
+        to-email:
+          type: string
+          format: email
+        from-name:
+          type: string
+        from-email:
+          type: string
+          format: email
+        subject:
+          type: string
+        received:
+          type: string
+          format: date-time
+    
+    NewEmail:
+      type: object
+      required:
+        - to-name
+        - to-email
+        - subject
+        - content
+      properties:
+        to-name:
+          type: string
+        to-email:
+          type: string
+          format: email
+        subject:
+          type: string
+        content:
+          type: string
+
+    MailboxResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - name
+          - mail
+        properties:
+          name:
+            type: string
+          mail:
+            type: array
+            items:
+              $ref: '#/components/schemas/EmailNoContent'
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
+paths:
+  /mail:
+    get:
+      description: Returns all EMail or emails from a specific mailbox
+      parameters:
+        - in: query
+          name: mailbox
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Email Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailboxResponse'
+        '404':
+          description: Mailbox not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      description: Create a new email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewEmail'
+      responses:
+        '200':
+          description: Email created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+        '400':
+          description: Invalid email format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mail/{id}:
+    get:
+      description: Get a specific email by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      responses:
+        '200':
+          description: Email found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid UUID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      description: Move an email to a different mailbox
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        - name: mailbox
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Email moved successfully
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Cannot move to sent mailbox
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

@@ -1,0 +1,3 @@
+div { color: blue }
+.mult { color: red }
+div.mult { color: green }

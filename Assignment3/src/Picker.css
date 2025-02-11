@@ -1,0 +1,61 @@
+.picker-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    font-family: Arial, sans-serif;
+}
+
+[role="region"] {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+[role="region"] > div:first-child {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+[role="row"] {
+    display: grid;
+    grid-template-columns: repeat(7, 40px);
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+[role="grid"] > div {
+    display: grid;
+    grid-template-columns: repeat(7, 40px);
+    gap: 2px;
+}
+
+[role="grid"] div {
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+
+[aria-disabled="true"] {
+    color: #ccc;
+    cursor: not-allowed !important;
+}
+
+div[data-state="checkin"], div[data-state="checkout"] {
+    background-color: #000;
+    color: white;
+    border-radius: 50%;
+}
+
+div[data-state="stay"] {
+    background-color: #f0f0f0;
+}
+
+.picker-container button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 10px;
+    font-size: 16px;
+}

@@ -1,0 +1,11 @@
+To install packages: 
+
+  $ npm install
+
+To run Vite dev server:
+
+  $ npm run dev
+
+Open in browser:
+
+  $ http://localhost:3000

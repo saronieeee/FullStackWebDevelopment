@@ -1,0 +1,34 @@
+/* 
+  CSE186 Assignment 1
+
+  CSS for Basic Requirement 
+*/
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.basic-course-container{
+  visibility: visible; 
+  width: 7.5%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0px;
+}
+
+.adv-course-container{
+  display:none;
+}
+
+.course {
+  background-color: yellow;
+  color: black;
+  font-size: 40px;
+  font-family: 'Courier New', Courier;
+  line-height: 60px;
+
+  margin-top: 8px;
+  width: 41px;
+  padding-left: 18px;
+}

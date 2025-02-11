@@ -1,0 +1,78 @@
+.picker-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    font-family: Arial, sans-serif;
+}
+
+#first,
+#second {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+#df,
+#ds {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.weekday-header {
+    display: grid;
+    grid-template-columns: repeat(7, 40px);
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 40px);
+    gap: 2px;
+}
+
+.calendar-grid div {
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.disabled {
+    color: #ccc;
+    cursor: not-allowed !important;
+}
+
+.checkin {
+    background-color: #000;
+    color: white;
+    border-radius: 50%;
+}
+
+.checkout {
+    background-color: #000;
+    color: white;
+    border-radius: 50%;
+}
+
+.stay {
+    background-color: #f0f0f0;
+}
+
+#prev,
+#next {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#prev:before {
+    content: "←";
+}
+
+#next:before {
+    content: "→";
+}

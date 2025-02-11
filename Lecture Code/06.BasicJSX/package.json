@@ -1,0 +1,28 @@
+{
+  "name": "cse186-basic-jsx",
+  "type": "module",
+  "version": "4.0.0",
+  "description": "CSE186 Basic JSX",
+  "author": "David Harrison <dcharris@ucsc.edu>",
+  "license": "UNLICENSED",
+  "repository": "none",
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "*",
+    "@testing-library/react": "*",
+    "@testing-library/user-event": "*",
+    "@vitest/coverage-v8": "*",
+    "@vitejs/plugin-react": "*",
+    "jsdom": "*",
+    "vite": "*",
+    "vitest": "*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --port 3000",
+    "test": "vitest run --coverage"
+  }
+}

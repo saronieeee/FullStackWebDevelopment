@@ -1,0 +1,20 @@
+{
+  "name": "cse186-assignment1",
+  "version": "1.1.0",
+  "type": "module",
+  "description": "CSE186 Assignment 1",
+  "author": "David Harrison <dcharris@ucsc.edu>",
+  "license": "UNLICENSED",
+  "repository": "none",
+  "devDependencies": {
+    "bestzip": "*",
+    "pixelmatch": "*",
+    "puppeteer": "*",
+    "replace": "*",
+    "vitest": "*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "zip": "bestzip CSE186-Assignment1-Submission.zip src/*"
+  }
+}

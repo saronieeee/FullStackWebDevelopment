@@ -1,0 +1,21 @@
+{
+  "name": "cse186-basic-react",
+  "type": "module",
+  "version": "3.0.0",
+  "description": "CSE186 Basic React",
+  "author": "David Harrison <dcharris@ucsc.edu>",
+  "license": "UNLICENSED",
+  "repository": "none",
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "*",
+    "vite": "*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --port 3000"
+  }
+}
