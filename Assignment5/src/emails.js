@@ -1,29 +1,39 @@
-import express from 'express';
 import {v4 as createUuid} from 'uuid';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import {fileURLToPath} from 'url';
+import express from 'express';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Email Service Implementation
 class EmailService {
   constructor() {
     this.mailboxes = new Map();
-    this.loadMailboxes();
+    this.dataDir = path.join(__dirname, '..', 'data');
   }
 
-  loadMailboxes() {
-    // Load the default mailboxes from JSON files
-    const mailboxFiles = ['inbox.json', 'sent.json', 'trash.json'];
+  async initialize() {
+    await this.loadMailboxes();
+  }
 
-    mailboxFiles.forEach((file) => {
+  async loadMailboxes() {
+    // Get all JSON files from the data directory
+    const files = await fs.readdir(this.dataDir);
+    const mailboxFiles = files.filter((file) => file.endsWith('.json'));
+
+    for (const file of mailboxFiles) {
       const mailboxName = path.basename(file, '.json');
-      const filePath = path.join(__dirname, '..', 'data', file);
-      const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      this.mailboxes.set(mailboxName, jsonData);
-    });
+      const filePath = path.join(this.dataDir, file);
+      const jsonData = await fs.readFile(filePath, 'utf8');
+      this.mailboxes.set(mailboxName, JSON.parse(jsonData));
+    }
+  }
+
+  async saveMailbox(mailboxName) {
+    const mailboxData = this.mailboxes.get(mailboxName);
+    const filePath = path.join(this.dataDir, `${mailboxName}.json`);
+    await fs.writeFile(filePath, JSON.stringify(mailboxData, null, 2));
   }
 
   getAllMailboxes() {
@@ -32,7 +42,6 @@ class EmailService {
       result.push({
         name,
         mail: emails.map((email) => {
-          // Create new object without content property
           return {
             'id': email.id,
             'to-name': email['to-name'],
@@ -56,7 +65,6 @@ class EmailService {
     return [{
       name: mailboxName,
       mail: mailbox.map((email) => {
-        // Create new object without content property
         return {
           'id': email.id,
           'to-name': email['to-name'],
@@ -80,7 +88,7 @@ class EmailService {
     throw new Error('Email not found');
   }
 
-  createEmail(newEmail) {
+  async createEmail(newEmail) {
     const sentEmail = {
       'id': createUuid(),
       ...newEmail,
@@ -91,10 +99,14 @@ class EmailService {
 
     const sentMailbox = this.mailboxes.get('sent');
     sentMailbox.push(sentEmail);
+
+    // Save the updated sent mailbox
+    await this.saveMailbox('sent');
+
     return sentEmail;
   }
 
-  moveEmail(id, targetMailbox) {
+  async moveEmail(id, targetMailbox) {
     let sourceMailbox = null;
     let emailToMove = null;
     let emailIndex = -1;
@@ -128,20 +140,24 @@ class EmailService {
 
     // Add to target mailbox
     this.mailboxes.get(targetMailbox).push(emailToMove);
+
+    // Save both affected mailboxes
+    await this.saveMailbox(sourceMailbox);
+    await this.saveMailbox(targetMailbox);
   }
 }
 
 // Create a single instance of the email service
 const service = new EmailService();
 
-// Route Handlers
+// Initialize the service
+await service.initialize();
+
+// Create the router
 const router = new express.Router();
 
-// Export both the service and the router
-export const emailService = service;
-
 // Get all mail or mail from a specific mailbox
-router.get('/mail', (req, res, next) => {
+router.get('/mail', async (req, res, next) => {
   try {
     const {mailbox} = req.query;
     if (mailbox) {
@@ -159,7 +175,7 @@ router.get('/mail', (req, res, next) => {
 });
 
 // Get a specific email by ID
-router.get('/mail/:id', (req, res, next) => {
+router.get('/mail/:id', async (req, res, next) => {
   try {
     const email = service.getEmail(req.params.id);
     res.json(email);
@@ -171,17 +187,17 @@ router.get('/mail/:id', (req, res, next) => {
 });
 
 // Create a new email
-router.post('/mail', (req, res, next) => {
-  const newEmail = service.createEmail(req.body);
+router.post('/mail', async (req, res, next) => {
+  const newEmail = await service.createEmail(req.body);
   res.json(newEmail);
 });
 
 // Move an email to a different mailbox
-router.put('/mail/:id', (req, res, next) => {
+router.put('/mail/:id', async (req, res, next) => {
   try {
     const {mailbox} = req.query;
 
-    service.moveEmail(req.params.id, mailbox);
+    await service.moveEmail(req.params.id, mailbox);
     res.status(204).send();
   } catch (error) {
     if (error.message === 'Email not found') {
@@ -192,5 +208,6 @@ router.put('/mail/:id', (req, res, next) => {
   }
 });
 
-export const emails = service;
+// Export both the service (for testing) and the router (for the app)
+export const emailService = service;
 export default router;
