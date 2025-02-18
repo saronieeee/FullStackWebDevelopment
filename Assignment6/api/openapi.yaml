@@ -133,6 +133,13 @@ paths:
           schema:
             type: string
           required: false
+        - in: query
+          name: from
+          schema:
+            type: string
+          required: false
+          description: >
+            Optional filter for emails by sender.
       responses:
         '200':
           description: Email Response

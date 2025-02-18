@@ -116,39 +116,56 @@ function transformEmailDataFull(row) {
 }
 
 app.get('/api/v0/mail', async (req, res, next) => {
-  const mailboxQuery = req.query.mailbox;
-  if (mailboxQuery) {
-    const mailboxResult = await pool.query(
-        'SELECT id, data->>\'name\' AS name FROM mailbox ' +
-        'WHERE data->>\'name\' = $1',
-        [mailboxQuery],
-    );
+  const {mailbox, from} = req.query;
+  if (from) {
+    const sql =
+      'SELECT b.data->>\'name\' AS mailbox_name, m.id, ' +
+      'm.data - \'content\' AS data FROM mail m ' +
+      'JOIN mailbox b ON m.mailbox = b.id ' +
+      'WHERE (m.data->\'from\'->>\'name\' ILIKE \'%\' || $1 || \'%\' ' +
+      'OR m.data->\'from\'->>\'email\' ILIKE \'%\' || $1 || \'%\')';
+    const result = await pool.query(sql, [from]);
+    const groups = {};
+    result.rows.forEach((row) => {
+      const name = row.mailbox_name;
+      if (!groups[name]) {
+        groups[name] = [];
+      }
+      groups[name].push(transformEmailData(row));
+    });
+    const response = Object.entries(groups).map(([name, mail]) => ({
+      name,
+      mail,
+    }));
+    return res.json(response);
+  } else if (mailbox) {
+    const sqlMail =
+      'SELECT id, data->>\'name\' AS name FROM mailbox ' +
+      'WHERE data->>\'name\' = $1';
+    const mailboxResult = await pool.query(sqlMail, [mailbox]);
     if (mailboxResult.rowCount === 0) {
-      return res.status(404)
-          .json({error: 'Mailbox not found'});
+      return res.status(404).json({error: 'Mailbox not found'});
     }
-    const mailbox = mailboxResult.rows[0];
-    const emailsResult = await pool.query(
-        'SELECT id, data - \'content\' AS data FROM mail ' +
-        'WHERE mailbox = $1',
-        [mailbox.id],
-    );
+    const mailboxData = mailboxResult.rows[0];
+    const sqlEmails =
+      'SELECT id, data - \'content\' AS data FROM mail ' +
+      'WHERE mailbox = $1';
+    const emailsResult = await pool.query(sqlEmails, [mailboxData.id]);
     const emails = emailsResult.rows.map(transformEmailData);
-    return res.json([{name: mailbox.name, mail: emails}]);
+    return res.json([{name: mailboxData.name, mail: emails}]);
   } else {
-    const mailboxesResult = await pool.query(
-        'SELECT id, data->>\'name\' AS name FROM mailbox',
-    );
+    const sqlMailboxes =
+      'SELECT id, data->>\'name\' AS name FROM mailbox';
+    const mailboxesResult = await pool.query(sqlMailboxes);
     const mailboxes = mailboxesResult.rows;
     const results = [];
-    for (const mailbox of mailboxes) {
-      const emailsResult = await pool.query(
-          'SELECT id, data - \'content\' AS data FROM mail ' +
-          'WHERE mailbox = $1',
-          [mailbox.id],
-      );
+    for (const mb of mailboxes) {
+      const sqlEmails =
+        'SELECT id, data - \'content\' AS data FROM mail ' +
+        'WHERE mailbox = $1';
+      const emailsResult = await pool.query(sqlEmails, [mb.id]);
       const emails = emailsResult.rows.map(transformEmailData);
-      results.push({name: mailbox.name, mail: emails});
+      results.push({name: mb.name, mail: emails});
     }
     return res.json(results);
   }
