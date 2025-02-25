@@ -1,0 +1,170 @@
+#
+# CSE186 Assignment 7 Backend
+#
+
+openapi: '3.0.3'
+
+info:
+  description: CSE186 Assignment 7 Backend
+  version: 0.2.0
+  title: CSE186 Assignment 7 Backend
+
+servers:
+  - url: http://localhost:3010/api/v0
+
+paths:
+  /mailbox:
+    get:
+      summary: Get all mailbox names
+      description: Returns the names of all mailboxes known to the system as an array of strings
+      operationId: getMailboxes
+      responses:
+        '200':
+          description: List of mailbox names successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["inbox", "sent", "trash"]
+
+  /mail:
+    get:
+      summary: Get emails in a mailbox
+      description: Return all emails in a specified mailbox as an array. The content property is removed from each email.
+      operationId: getMailByMailbox
+      parameters:
+        - name: mailbox
+          in: query
+          description: Name of the mailbox to fetch emails from
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of emails in mailbox successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailWithoutContent'
+        '404':
+          description: Mailbox not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mail/{id}:
+    put:
+      summary: Move an email to a different mailbox
+      description: Move the email identified by id into the named mailbox
+      operationId: moveEmail
+      parameters:
+        - name: id
+          in: path
+          description: ID of the email to move
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: mailbox
+          in: query
+          description: Name of the target mailbox
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Email successfully moved
+        '403':
+          description: Cannot move email to sent mailbox
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Email or mailbox not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Email:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        from:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+        to:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+        subject:
+          type: string
+        content:
+          type: string
+        received:
+          type: string
+          format: date-time
+      required:
+        - id
+        - from
+        - to
+        - subject
+        - content
+        - received
+
+    EmailWithoutContent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        from:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+        to:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+        subject:
+          type: string
+        received:
+          type: string
+          format: date-time
+      required:
+        - id
+        - from
+        - to
+        - subject
+        - received
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
