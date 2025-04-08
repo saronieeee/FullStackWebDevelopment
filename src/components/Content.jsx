@@ -13,8 +13,6 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import {useVisual} from '../contexts/VisualContext';
 
-
-
 /**
  * Formats the received date for the list view
  * @param {string} dateStr - The ISO date string to format
