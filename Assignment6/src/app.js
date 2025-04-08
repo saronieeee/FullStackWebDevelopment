@@ -54,17 +54,6 @@ app.use(
 
 /**
  * Transforms a database row's email data into a flattened object.
- *
- * The seed data is stored in a nested format, for example:
- * {
- * "to": { "name": "Recipient", "email": "r@example.com" },
- * "from": { "name": "Sender", "email": "s@example.com" },
- * "subject": "...",
- * "content": "...",
- * "received": "...",
- * "sent": "..."
- * }
- *
  * The API expects a flat object with keys:
  * "to-name", "to-email", "from-name", "from-email", etc.
  * @param {object} row - The database row containing a "data" property.

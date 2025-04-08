@@ -1168,5 +1168,35 @@
     "from-name": "CSE186 Student",
     "from-email": "cse186-student@ucsc.edu",
     "received": "2025-02-11T04:56:22.972Z"
+  },
+  {
+    "id": "449e5bfd-41c2-40ef-943b-d895732853ed",
+    "to-name": "Test Recipient",
+    "to-email": "test@example.com",
+    "subject": "Persistence Test",
+    "content": "This email should be saved to disk",
+    "from-name": "CSE186 Student",
+    "from-email": "cse186-student@ucsc.edu",
+    "received": "2025-02-11T04:59:51.964Z"
+  },
+  {
+    "id": "04dc7f3b-45f9-4e72-92c0-f906476d030e",
+    "to-name": "Test Recipient",
+    "to-email": "test@example.com",
+    "subject": "Test Subject",
+    "content": "Test Content",
+    "from-name": "CSE186 Student",
+    "from-email": "cse186-student@ucsc.edu",
+    "received": "2025-02-11T05:00:10.275Z"
+  },
+  {
+    "id": "b5094c9a-628a-4797-8356-46e15b02369b",
+    "to-name": "Test Recipient",
+    "to-email": "test@example.com",
+    "subject": "Persistence Test",
+    "content": "This email should be saved to disk",
+    "from-name": "CSE186 Student",
+    "from-email": "cse186-student@ucsc.edu",
+    "received": "2025-02-11T05:00:11.764Z"
   }
 ]

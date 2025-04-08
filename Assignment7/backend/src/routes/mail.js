@@ -38,7 +38,6 @@ router.get('/mail', async (req, res, next) => {
         .json({error: 'mailbox query parameter is required'});
   }
   try {
-    // Retrieve the mailbox id by extracting the name from the JSON column.
     const mailboxResult = await pool.query(
         'SELECT id FROM mailbox WHERE data->>\'name\' = $1',
         [mailboxName],
@@ -47,7 +46,6 @@ router.get('/mail', async (req, res, next) => {
       return res.status(404).json({error: 'Mailbox not found'});
     }
     const mailboxId = mailboxResult.rows[0].id;
-    // Query emails for that mailbox, using the correct foreign key column.
     const mailResult = await pool.query(
         `SELECT 
            id, 
@@ -87,7 +85,6 @@ router.put('/mail/:id', async (req, res, next) => {
   }
 
   try {
-    // 1. Verify that the email exists.
     const emailResult = await pool.query(
         'SELECT * FROM mail WHERE id = $1',
         [emailId],
@@ -96,7 +93,6 @@ router.put('/mail/:id', async (req, res, next) => {
       return res.status(404).json({error: 'Email not found'});
     }
 
-    // 2. Look up the mailbox id using the same logic as in GET /mail
     const mailboxResult = await pool.query(
         'SELECT id FROM mailbox WHERE data->>\'name\' ILIKE $1',
         [newMailboxName],
@@ -106,7 +102,6 @@ router.put('/mail/:id', async (req, res, next) => {
     }
     const newMailboxId = mailboxResult.rows[0].id;
 
-    // 3. Update the mail record with the new mailbox id.
     await pool.query(
         'UPDATE mail SET mailbox = $1 WHERE id = $2',
         [newMailboxId, emailId],

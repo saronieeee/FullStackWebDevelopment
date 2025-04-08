@@ -1,0 +1,549 @@
+#
+# CSE186 Assignment 8 Backend
+#
+
+openapi: '3.0.3'
+
+info:
+  description: CSE186 Assignment 8 Backend
+  version: 0.2.0
+  title: CSE186 Assignment 8 Backend
+
+servers:
+  - url: http://localhost:3010/api/v0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: anna@books.com
+        password:
+          type: string
+          format: password
+          example: annaadmin
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+          description: JWT token for authentication
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJlbWFpbCI6ImFubmFAYm9va3MuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        user:
+          type: object
+          required:
+            - id
+            - email
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 123e4567-e89b-12d3-a456-426614174000
+            email:
+              type: string
+              format: email
+              example: anna@books.com
+            name:
+              type: string
+              example: Anna Admin
+            role:
+              type: string
+              enum: [admin, member]
+              example: admin
+
+    WorkspaceResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        workspace_data:
+          type: object
+
+    ChannelResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        channel_data:
+          type: object
+
+    MessageResponse:
+      type: object
+      required:
+        - id
+        - content
+        - sent_at
+        - sender_id
+        - sender_name
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sender_id:
+          type: string
+          format: uuid
+        sender_email:
+          type: string
+          format: email
+        sender_name:
+          type: string
+        is_deleted:
+          type: boolean
+        message_data:
+          type: object
+
+    CreateMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+
+paths:
+  /login:
+    post:
+      summary: Authenticate a user and return a JWT token
+      operationId: login
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me:
+    get:
+      summary: Get current authenticated user's information
+      operationId: getMyInfo
+      tags:
+        - users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - email
+                  - name
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                    format: email
+                  name:
+                    type: string
+                  role:
+                    type: string
+                    enum: [admin, member]
+                  status:
+                    type: string
+                    enum: [active, away]
+                  lastLogin:
+                    type: string
+                    format: date-time
+                  preferences:
+                    type: object
+                    properties:
+                      lastWorkspace:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      lastChannel:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      lastMessage:
+                        type: string
+                        format: uuid
+                        nullable: true
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me/preferences:
+    patch:
+      summary: Update current user's preferences
+      operationId: updateMyPreferences
+      tags:
+        - users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastWorkspace:
+                  type: string
+                  format: uuid
+                  nullable: true
+                lastChannel:
+                  type: string
+                  format: uuid
+                  nullable: true
+                lastMessage:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preferences:
+                    type: object
+                    properties:
+                      lastWorkspace:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      lastChannel:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      lastMessage:
+                        type: string
+                        format: uuid
+                        nullable: true
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /logout:
+    post:
+      summary: Logout current user
+      operationId: logout
+      tags:
+        - auth
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Logout successful'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /workspaces:
+    get:
+      summary: Get workspaces for the authenticated user
+      operationId: getUserWorkspaces
+      tags:
+        - workspaces
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of workspaces
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workspaces:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkspaceResponse'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /workspaces/{workspaceId}/channels:
+    get:
+      summary: Get channels for a specific workspace
+      operationId: getWorkspaceChannels
+      tags:
+        - channels
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the workspace
+      responses:
+        '200':
+          description: List of channels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChannelResponse'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User not a member of the workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /channels/{channelId}/messages:
+    get:
+      summary: Get messages for a specific channel
+      operationId: getChannelMessages
+      tags:
+        - messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: channelId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the channel
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User not a member of the workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create a new message in a channel
+      operationId: createChannelMessage
+      tags:
+        - messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: channelId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the channel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+      responses:
+        '201':
+          description: Message created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User not a member of the workspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

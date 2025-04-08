@@ -1,7 +1,7 @@
 {
-  "name": "cse186-assignment7",
-  "version": "4.0.0",
-  "description": "CSE186 Assignment 7",
+  "name": "cse186-assignment8",
+  "version": "3.1.0",
+  "description": "CSE186 Assignment 8",
   "author": "David Harrison <dcharris@ucsc.edu>",
   "license": "UNLICENSED",
   "repository": "none",
@@ -15,14 +15,12 @@
     "start-frontend": "cd frontend && npm run dev",
     "install-e2e": "cd e2e && npm install",
     "start": "(npm run start-backend) & (npm run start-frontend)",
-    "zip": "bestzip CSE186.Assignment7.Submission.zip frontend/src/* backend/src/* backend/api/* backend/test/*",
+    "zip": "bestzip CSE186.Assignment8.Submission.zip e2e/test/* frontend/src/* backend/src/* backend/api/* backend/sql/* backend/test/*",
     "postinstall": "(npm run install-backend) && (npm run install-frontend) && (npm run install-e2e)"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.4.5",
-    "@mui/material": "^6.4.5",
-    "mui": "^0.0.1"
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2"
   }
 }

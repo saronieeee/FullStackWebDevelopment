@@ -21,16 +21,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Load your OpenAPI specification (adjust the path if needed)
-const swaggerDocument = yaml.load(fs.readFileSync('../backend/api/openapi.yaml', 'utf8'));
+const swaggerDocument = yaml.load(
+    fs.readFileSync('../backend/api/openapi.yaml', 'utf8'));
 
-// Set up Swagger UI to serve your API docs at /api/v0/docs
 app.use('/api/v0/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Mount your API routes under /api/v0
 app.use('/api/v0', mailRoutes);
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({error: err.message});
